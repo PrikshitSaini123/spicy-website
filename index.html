@@ -58,11 +58,15 @@
             height: 100%;
             z-index: -1;
         }
+        .sexy-overlay {
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 107, 107, 0.2));
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body class="text-gray-800">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg p-4 fixed w-full z-10">
+    <nav class="bg-white shadow-lg p-4 fixed w-full z-10 sexy-overlay">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-yellow-600">Spice Crazy</h1>
             <ul class="flex space-x-6">
@@ -99,25 +103,25 @@
         <div class="container mx-auto text-center fade-in">
             <h2 class="text-4xl font-bold mb-10 text-gray-800">Our Crazy Spices</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="product-card bg-yellow-100 p-6 rounded-lg shadow-md">
+                <div class="product-card bg-yellow-100 p-6 rounded-lg shadow-md" data-spice="turmeric">
                     <img src="turmeric.jpg" alt="Turmeric Powder" class="w-full h-48 object-cover rounded mb-4">
                     <h3 class="text-2xl font-semibold text-yellow-700 mb-2">Turmeric Powder</h3>
                     <p class="text-gray-600 mb-4">Golden goodness for health and flavor.</p>
                     <button class="btn-effect bg-yellow-500 text-white px-6 py-2 rounded-full">Buy Now</button>
                 </div>
-                <div class="product-card bg-red-100 p-6 rounded-lg shadow-md">
+                <div class="product-card bg-red-100 p-6 rounded-lg shadow-md" data-spice="chilli">
                     <img src="chilli.jpg" alt="Chilli Powder" class="w-full h-48 object-cover rounded mb-4">
                     <h3 class="text-2xl font-semibold text-red-700 mb-2">Chilli Powder</h3>
                     <p class="text-gray-600 mb-4">Spicy kick to ignite your dishes.</p>
                     <button class="btn-effect bg-red-500 text-white px-6 py-2 rounded-full">Buy Now</button>
                 </div>
-                <div class="product-card bg-green-100 p-6 rounded-lg shadow-md">
+                <div class="product-card bg-green-100 p-6 rounded-lg shadow-md" data-spice="coriander">
                     <img src="coriander.jpg" alt="Coriander Powder" class="w-full h-48 object-cover rounded mb-4">
                     <h3 class="text-2xl font-semibold text-green-700 mb-2">Coriander Powder</h3>
                     <p class="text-gray-600 mb-4">Fresh, citrusy notes for balance.</p>
                     <button class="btn-effect bg-green-500 text-white px-6 py-2 rounded-full">Buy Now</button>
                 </div>
-                <div class="product-card bg-amber-100 p-6 rounded-lg shadow-md">
+                <div class="product-card bg-amber-100 p-6 rounded-lg shadow-md" data-spice="cumin">
                     <img src="cumin.jpg" alt="Cumin Powder" class="w-full h-48 object-cover rounded mb-4">
                     <h3 class="text-2xl font-semibold text-amber-700 mb-2">Cumin Powder</h3>
                     <p class="text-gray-600 mb-4">Earthy warmth for every recipe.</p>
@@ -156,26 +160,63 @@
     </footer>
 
     <script>
-        // Three.js 3D Animation (Rotating Spice Icons)
+        // Three.js Enhanced 3D Scene with Multiple Spice Models
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.getElementById('threejs-container').appendChild(renderer.domElement);
 
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 0xffa500, wireframe: true });
-        const sphere = new THREE.Mesh(geometry, material);
-        scene.add(sphere);
+        // Lighting for "sexy" glow
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffa500, 1);
+        pointLight.position.set(10, 10, 10);
+        scene.add(pointLight);
+
+        // Create 3D Spice Models
+        const spices = [];
+        const geometries = [
+            new THREE.ConeGeometry(0.5, 1, 8), // Chilli (cone)
+            new THREE.CylinderGeometry(0.3, 0.3, 1.5, 8), // Turmeric root (cylinder)
+            new THREE.PlaneGeometry(1, 1), // Coriander leaf (plane)
+            new THREE.SphereGeometry(0.4, 16, 16) // Cumin seed (sphere)
+        ];
+        const colors = [0xff0000, 0xffff00, 0x00ff00, 0x8b4513]; // Red, Yellow, Green, Brown
+
+        geometries.forEach((geom, i) => {
+            const material = new THREE.MeshLambertMaterial({ color: colors[i], emissive: colors[i], emissiveIntensity: 0.1 });
+            const mesh = new THREE.Mesh(geom, material);
+            mesh.position.set((i - 1.5) * 3, Math.random() * 2 - 1, -5);
+            mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            scene.add(mesh);
+            spices.push(mesh);
+        });
+
         camera.position.z = 5;
 
+        // Animation Loop with Interactive Effects
+        let hoveredSpice = null;
         function animate() {
             requestAnimationFrame(animate);
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
+            spices.forEach((spice, i) => {
+                spice.rotation.x += 0.01;
+                spice.rotation.y += 0.01;
+                if (hoveredSpice === i) {
+                    spice.scale.setScalar(1.5); // Scale up on hover
+                } else {
+                    spice.scale.setScalar(1);
+                }
+            });
             renderer.render(scene, camera);
         }
         animate();
+
+        // Hover Interaction for Product Cards
+        document.querySelectorAll('.product-card').forEach((card, i) => {
+            card.addEventListener('mouseenter', () => { hoveredSpice = i; });
+            card.addEventListener('mouseleave', () => { hoveredSpice = null; });
+        });
 
         // Fade-in on scroll
         const observer = new IntersectionObserver((entries) => {
